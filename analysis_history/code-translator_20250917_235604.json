@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-09-17T23:56:04.218180",
+  "radon": [
+    {
+      "line": "C:\\Users\\acer\\AppData\\Local\\Temp\\tmptxer1d7q\\duo.py"
+    },
+    {
+      "line": "F 21:0 chatbot_ui - A (3)"
+    },
+    {
+      "line": "F 9:0 ai_chatbot - A (1)"
+    },
+    {
+      "line": "2 blocks (classes, functions, methods) analyzed."
+    },
+    {
+      "line": "Average complexity: A (2.0)"
+    }
+  ],
+  "cloc": {
+    "header": {
+      "cloc_url": "github.com/AlDanial/cloc",
+      "cloc_version": "2.06",
+      "elapsed_seconds": 0.151917934417725,
+      "n_files": 2,
+      "n_lines": 142,
+      "files_per_second": 13.1650025894945,
+      "lines_per_second": 934.715183854109
+    },
+    "Markdown": {
+      "nFiles": 1,
+      "blank": 31,
+      "comment": 0,
+      "code": 54
+    },
+    "Python": {
+      "nFiles": 1,
+      "blank": 9,
+      "comment": 8,
+      "code": 40
+    },
+    "SUM": {
+      "blank": 40,
+      "comment": 8,
+      "code": 94,
+      "nFiles": 2
+    }
+  },
+  "pylint": {
+    "issues": [
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmptxer1d7q\\duo.py:25:0: C0301: Line too long (102/100) (line-too-long)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmptxer1d7q\\duo.py:26:0: C0303: Trailing whitespace (trailing-whitespace)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmptxer1d7q\\duo.py:27:18: C0303: Trailing whitespace (trailing-whitespace)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmptxer1d7q\\duo.py:57:0: C0304: Final newline missing (missing-final-newline)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmptxer1d7q\\duo.py:1:0: C0114: Missing module docstring (missing-module-docstring)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmptxer1d7q\\duo.py:9:0: C0116: Missing function or method docstring (missing-function-docstring)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmptxer1d7q\\duo.py:2:0: C0411: standard import \"os\" should be placed before third party import \"streamlit\" (wrong-import-order)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmptxer1d7q\\duo.py:2:0: W0611: Unused import os (unused-import)",
+      "-----------------------------------",
+      "Your code has been rated at 4.76/10"
+    ],
+    "summary": "Your code has been rated at 4.76/10"
+  },
+  "ai_summary": "**Code Quality Summary**\n\nThe static analysis reports suggest that the code quality is moderate. Here are the key findings:\n\n* **Radon Report**: The average complexity is 2.0, which is relatively low, indicating that the code is not overly complex. However, there are two blocks (classes, functions, or methods) that have a complexity of 3, which may require refactoring.\n* **Cloc Report**: The code consists of 2 files with a total of 142 lines, 94 of which are code. The code-to-blank/comment ratio is relatively good, indicating that the code is well-structured and readable.\n* **Pylint Report**: The code has a rating of 4.76/10, which is relatively low. There are several issues, including:\n\t+ Line length and trailing whitespace issues, which can make the code harder to read.\n\t+ Missing docstrings, which can make it harder for others to understand the code.\n\t+ Unused imports, which can clutter the code.\n\t+ Incorrect import order, which can lead to conflicts.\n\n**Maintainability and Complexity**\n\nThe code complexity is relatively low, with an average complexity of 2.0. However, there are areas that can be improved, such as:\n\n* Refactoring complex blocks to reduce complexity.\n* Adding docstrings to improve code readability and maintainability.\n* Removing unused imports and fixing import order.\n\n**Recommendations**\n\n1. Refactor complex code blocks to reduce complexity.\n2. Add docstrings to improve code readability and maintainability.\n3. Fix line length and trailing whitespace issues.\n4. Remove unused imports and fix import order.\n5. Consider using a linter to automate code quality checks.\n\nBy addressing these issues, the code quality, maintainability, and complexity can be improved, making it easier for others to understand and work with the code."
+}

@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-09-17T23:33:42.090378",
+  "radon": [
+    {
+      "line": "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpuo7o18gx\\duo.py"
+    },
+    {
+      "line": "F 21:0 chatbot_ui - A (3)"
+    },
+    {
+      "line": "F 9:0 ai_chatbot - A (1)"
+    },
+    {
+      "line": "2 blocks (classes, functions, methods) analyzed."
+    },
+    {
+      "line": "Average complexity: A (2.0)"
+    }
+  ],
+  "cloc": {
+    "header": {
+      "cloc_url": "github.com/AlDanial/cloc",
+      "cloc_version": "2.06",
+      "elapsed_seconds": 0.138700008392334,
+      "n_files": 2,
+      "n_lines": 142,
+      "files_per_second": 14.4196097980232,
+      "lines_per_second": 1023.79229565965
+    },
+    "Markdown": {
+      "nFiles": 1,
+      "blank": 31,
+      "comment": 0,
+      "code": 54
+    },
+    "Python": {
+      "nFiles": 1,
+      "blank": 9,
+      "comment": 8,
+      "code": 40
+    },
+    "SUM": {
+      "blank": 40,
+      "comment": 8,
+      "code": 94,
+      "nFiles": 2
+    }
+  },
+  "pylint": {
+    "issues": [
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpuo7o18gx\\duo.py:25:0: C0301: Line too long (102/100) (line-too-long)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpuo7o18gx\\duo.py:26:0: C0303: Trailing whitespace (trailing-whitespace)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpuo7o18gx\\duo.py:27:18: C0303: Trailing whitespace (trailing-whitespace)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpuo7o18gx\\duo.py:57:0: C0304: Final newline missing (missing-final-newline)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpuo7o18gx\\duo.py:1:0: C0114: Missing module docstring (missing-module-docstring)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpuo7o18gx\\duo.py:9:0: C0116: Missing function or method docstring (missing-function-docstring)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpuo7o18gx\\duo.py:2:0: C0411: standard import \"os\" should be placed before third party import \"streamlit\" (wrong-import-order)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpuo7o18gx\\duo.py:2:0: W0611: Unused import os (unused-import)",
+      "-----------------------------------",
+      "Your code has been rated at 4.76/10"
+    ],
+    "summary": "Your code has been rated at 4.76/10"
+  },
+  "ai_summary": "**Code Quality, Complexity, and Maintainability Summary**\n\nBased on the provided reports, here's a concise summary:\n\n* **Code Quality:**\n\t+ The code has 11 issues reported by Pylint, including line length, trailing whitespace, missing docstrings, and incorrect import order.\n\t+ The code rating is 4.76/10, indicating room for improvement.\n* **Code Complexity:**\n\t+ The Radon report shows an average complexity of A (2.0), which is relatively low. This suggests that the code is not overly complex.\n\t+ Only 2 blocks (classes, functions, or methods) were analyzed, indicating a relatively small codebase.\n* **Maintainability:**\n\t+ The Cloc report shows a moderate number of lines of code (142) and a reasonable number of files (2).\n\t+ The code has a moderate number of comments (8) and blank lines (40), which is acceptable.\n\t+ However, the Pylint report highlights several issues that can impact maintainability, such as missing docstrings and incorrect import order.\n\n**Recommendations:**\n\n1. Address the issues reported by Pylint to improve code quality and maintainability.\n2. Consider adding more docstrings to functions and modules to improve code readability.\n3. Review import order and remove unused imports to improve code organization.\n4. Refactor long lines and remove trailing whitespace to improve code readability.\n\nBy addressing these issues, you can improve the overall quality, complexity, and maintainability of the codebase."
+}
