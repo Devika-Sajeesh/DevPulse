@@ -1,17 +1,32 @@
 import os, json, httpx
+from dotenv import load_dotenv
+
+load_dotenv()
+print("DEBUG: GROQ_KEY =", os.getenv("GROQ_API_KEY"))
+
 
 GROQ_KEY = os.getenv("GROQ_API_KEY")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 MODEL = os.getenv("AI_MODEL", "gpt-4o-mini")
 
+# --- Utility: truncate long text ---
+def truncate(text: str, max_chars: int = 2000) -> str:
+    if not text:
+        return ""
+    return text[:max_chars] + ("..." if len(text) > max_chars else "")
+
 async def generate_summary(radon: str, cloc: str, pylint: str):
     if not (GROQ_KEY or OPENAI_KEY):
-        return {"error": "No API key set"}
+        return {"error": "No API key set. Please configure GROQ_API_KEY or OPENAI_API_KEY."}
 
+    # ✅ Only send trimmed content
     prompt = (
-        "Summarize into JSON with keys: complexity, quality, maintainability, "
-        "recommendations (list). Keep it short.\n\n"
-        f"Radon:\n{radon}\n\nCloc:\n{cloc}\n\nPylint:\n{pylint}"
+        "Summarize the following analysis into JSON with keys:\n"
+        "complexity (radon), quality (pylint), maintainability (cloc), "
+        "and recommendations (list). Keep it short.\n\n"
+        f"Radon (trimmed):\n{truncate(radon)}\n\n"
+        f"CLOC (trimmed):\n{truncate(cloc)}\n\n"
+        f"Pylint (trimmed):\n{truncate(pylint)}"
     )
 
     api_url = (
@@ -32,7 +47,13 @@ async def generate_summary(radon: str, cloc: str, pylint: str):
         r = await client.post(api_url, json=payload, headers=headers)
         data = r.json()
 
-    content = data["choices"][0]["message"]["content"]
+    # Defensive parsing
+    try:
+        content = data["choices"][0]["message"]["content"]
+    except Exception:
+        return {"error": f"Bad response from AI: {data}"}
+
+    # Extract JSON safely
     start, end = content.find("{"), content.rfind("}")
     if start == -1 or end == -1:
         return {"raw": content}

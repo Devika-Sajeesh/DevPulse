@@ -1,9 +1,0 @@
-{
-  "upload_prompt": "Upload your project files for analysis",
-  "analysis_complete": "Analysis complete",
-  "error_file": "Error reading file",
-  "repo_cloned": "Repository successfully cloned",
-  "analysis_started": "Static analysis started",
-  "analysis_finished": "Static analysis finished",
-  "secret_detected": "Potential secret detected"
-}
