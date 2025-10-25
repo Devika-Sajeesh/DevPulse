@@ -57,7 +57,31 @@ export default function AISummaryCard({ summary }) {
             h3: ({ ...props }) => (
               <h3 className="md-heading md-h3" {...props} />
             ),
+            h4: ({ ...props }) => (
+              <h4 className="md-heading md-h4" {...props} />
+            ),
             p: ({ ...props }) => <p className="md-paragraph" {...props} />,
+            ul: ({ ...props }) => <ul className="md-list" {...props} />,
+            ol: ({ ...props }) => <ol className="md-list" {...props} />,
+            li: ({ ...props }) => <li className="md-list-item" {...props} />,
+            strong: ({ ...props }) => (
+              <strong className="md-strong" {...props} />
+            ),
+            em: ({ ...props }) => <em className="md-emphasis" {...props} />,
+            blockquote: ({ ...props }) => (
+              <blockquote className="md-blockquote" {...props} />
+            ),
+            a: ({ ...props }) => <a className="md-link" {...props} />,
+            table: ({ ...props }) => (
+              <div className="table-container">
+                <table className="md-table" {...props} />
+              </div>
+            ),
+            thead: ({ ...props }) => (
+              <thead className="md-table-header" {...props} />
+            ),
+            th: ({ ...props }) => <th className="md-table-header" {...props} />,
+            td: ({ ...props }) => <td className="md-table-cell" {...props} />,
             code: ({ inline, className, children, ...props }) => {
               const match = /language-(\w+)/.exec(className || "");
               const language = match ? match[1] : "";
@@ -79,6 +103,9 @@ export default function AISummaryCard({ summary }) {
             },
           }}
         />
+        {needsExpand && !isExpanded && (
+          <div className="summary-preview-overlay"></div>
+        )}
       </div>
 
       <div className="ai-summary-footer">
@@ -86,9 +113,6 @@ export default function AISummaryCard({ summary }) {
           <i className="fas fa-brain"></i>
           AI-Powered Analysis
         </div>
-        {needsExpand && !isExpanded && (
-          <div className="summary-preview-overlay"></div>
-        )}
       </div>
     </div>
   );

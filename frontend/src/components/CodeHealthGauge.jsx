@@ -1,18 +1,13 @@
-// frontend/src/components/CodeHealthGauge.jsx
-
 import React from "react";
-import "../components.css"; // Assuming this imports the necessary styles
 
 const CodeHealthGauge = ({ score }) => {
-  // 1. Determine Color (Green: Good, Yellow: Medium, Red: Poor)
   const getColor = (s) => {
-    if (s >= 75) return "var(--color-success)";
-    if (s >= 50) return "var(--color-warning)";
-    return "var(--color-danger)";
+    if (s >= 75) return "var(--success)";
+    if (s >= 50) return "var(--warning)";
+    return "var(--danger)";
   };
 
-  // 2. Calculate the rotation for the gauge needle (0 to 180 degrees)
-  const normalizedScore = Math.min(100, Math.max(0, score)); // Clamp score between 0 and 100
+  const normalizedScore = Math.min(100, Math.max(0, score));
   const rotation = (normalizedScore / 100) * 180;
   const color = getColor(normalizedScore);
 
@@ -37,5 +32,3 @@ const CodeHealthGauge = ({ score }) => {
 };
 
 export default CodeHealthGauge;
-
-// You will need to add corresponding CSS to frontend/src/components.css (see section 3)

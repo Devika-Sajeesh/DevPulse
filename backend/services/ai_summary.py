@@ -4,7 +4,7 @@ import os, json, httpx
 from dotenv import load_dotenv
 
 load_dotenv()
-print("DEBUG: GROQ_KEY =", os.getenv("GROQ_API_KEY"))
+
 
 
 GROQ_KEY = os.getenv("GROQ_API_KEY")

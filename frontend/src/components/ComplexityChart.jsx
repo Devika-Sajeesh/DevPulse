@@ -11,7 +11,6 @@ import {
 export default function ComplexityChart({ radon }) {
   if (!radon || !Array.isArray(radon)) return null;
 
-  // Safely parse Radon output
   const data = radon
     .filter((item) => item.line.includes(" - ") && /\(\d+\)/.test(item.line))
     .map((item) => {
@@ -24,9 +23,9 @@ export default function ComplexityChart({ radon }) {
     });
 
   const getColor = (score) => {
-    if (score <= 5) return "#10b981"; // Green - good
-    if (score <= 10) return "#f59e0b"; // Orange - medium
-    return "#ef4444"; // Red - bad
+    if (score <= 5) return "var(--secondary)";
+    if (score <= 10) return "var(--warning)";
+    return "var(--danger)";
   };
 
   if (data.length === 0) return <p>No complexity data available.</p>;
@@ -37,19 +36,28 @@ export default function ComplexityChart({ radon }) {
         <h3>Function Complexity Analysis</h3>
         <div className="legend">
           <div className="legend-item">
-            <span className="legend-color low"></span> Low
+            <span className="legend-color low"></span>
+            Low
           </div>
           <div className="legend-item">
-            <span className="legend-color medium"></span> Medium
+            <span className="legend-color medium"></span>
+            Medium
           </div>
           <div className="legend-item">
-            <span className="legend-color high"></span> High
+            <span className="legend-color high"></span>
+            High
           </div>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data}>
-          <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+          <XAxis
+            dataKey="name"
+            tick={{ fontSize: 12 }}
+            angle={-45}
+            textAnchor="end"
+            height={80}
+          />
           <YAxis />
           <Tooltip
             formatter={(value) => [`Complexity: ${value}`, ""]}

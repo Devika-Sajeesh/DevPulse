@@ -2,16 +2,16 @@ export default function PylintBadge({ score }) {
   let color, rating;
 
   if (score >= 9) {
-    color = "#10b981"; // Green
+    color = "var(--secondary)";
     rating = "Excellent";
   } else if (score >= 7) {
-    color = "#f59e0b"; // Orange
+    color = "var(--warning)";
     rating = "Good";
   } else if (score >= 5) {
-    color = "#f97316"; // Amber
+    color = "#f97316";
     rating = "Fair";
   } else {
-    color = "#ef4444"; // Red
+    color = "var(--danger)";
     rating = "Poor";
   }
 

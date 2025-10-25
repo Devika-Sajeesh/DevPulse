@@ -1,15 +1,29 @@
-/* App.css */
+/* frontend/src/App.css - Refactored for DevPulse */
+
+/* --- 1. Variables and Global Reset (Refined Palette) --- */
 :root {
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
-  --secondary: #10b981;
-  --danger: #ef4444;
-  --warning: #f59e0b;
-  --dark: #1f2937;
-  --light: #f9fafb;
-  --gray: #6b7280;
-  --gray-light: #e5e7eb;
-  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* Branding & Accent Colors */
+  --primary: #5a5fef;
+  --primary-dark: #4a4edf;
+  --secondary: #06b6d4;
+
+  /* Status Colors */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  /* Neutral & Background Colors */
+  --bg-main: #fcfcfc;
+  --bg-page: #f2f4f7;
+  --text-dark: #1e293b;
+  --text-gray: #475569;
+  --border-light: #e2e8f0;
+
+  /* Spacing & Effects */
+  --spacing-unit: 1rem;
+  --radius-md: 8px;
+  --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05),
+    0 4px 6px -2px rgba(0, 0, 0, 0.03);
   --transition: all 0.3s ease;
 }
 
@@ -20,17 +34,18 @@
 body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
     sans-serif;
-  background-color: #f5f7fa;
-  color: var(--dark);
+  background-color: var(--bg-page);
+  color: var(--text-dark);
   line-height: 1.6;
   margin: 0;
   padding: 0;
 }
 
+/* --- 2. Layout Structure --- */
 .app-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 var(--spacing-unit);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -38,72 +53,68 @@ body {
 
 .app-main {
   flex: 1;
-  padding: 2rem 0;
+  padding: 2.5rem 0;
 }
 
+/* --- 3. Header and Footer --- */
 .app-footer {
   text-align: center;
   padding: 1.5rem 0;
-  color: var(--gray);
-  font-size: 0.9rem;
-  border-top: 1px solid var(--gray-light);
-  margin-top: 2rem;
+  color: var(--text-gray);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--border-light);
+  margin-top: 3rem;
 }
 
-/* Loading animation */
-.loading-container {
+/* --- 4. Loading and Error States --- */
+.loading-container,
+.error-container {
   text-align: center;
-  margin: 3rem 0;
-  padding: 2rem;
-  background: white;
-  border-radius: 12px;
+  margin: 3rem auto;
+  padding: 2.5rem;
+  background: var(--bg-main);
+  border-radius: var(--radius-md);
   box-shadow: var(--card-shadow);
+  max-width: 600px;
 }
 
 .spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid var(--gray-light);
+  border: 4px solid var(--border-light);
   border-top: 4px solid var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
+  margin: 0 auto 1.5rem;
 }
 
 @keyframes spin {
-  0% {
+  from {
     transform: rotate(0deg);
   }
-  100% {
+  to {
     transform: rotate(360deg);
   }
 }
 
 .loading-subtext {
-  color: var(--gray);
+  color: var(--text-gray);
   font-size: 0.9rem;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
 }
 
-/* Error state */
 .error-container {
-  text-align: center;
-  margin: 2rem 0;
-  padding: 2rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: var(--card-shadow);
-  border-left: 4px solid var(--danger);
+  border-left: 5px solid var(--color-danger);
 }
 
 .error-icon {
-  font-size: 2rem;
+  font-size: 2.5rem;
   margin-bottom: 1rem;
   display: block;
 }
 
 .error-container h3 {
-  color: var(--danger);
+  color: var(--color-danger);
   margin-bottom: 0.5rem;
 }
 
@@ -111,28 +122,30 @@ body {
   background: var(--primary);
   color: white;
   border: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 6px;
+  padding: 0.6rem 1.8rem;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-weight: 600;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   transition: var(--transition);
+  box-shadow: 0 4px 6px -1px rgba(90, 95, 239, 0.1),
+    0 2px 4px -1px rgba(90, 95, 239, 0.06);
 }
 
 .retry-button:hover {
   background: var(--primary-dark);
 }
 
-/* Results layout */
+/* --- 5. Results Layout --- */
 .results-container {
   margin-top: 2rem;
-  animation: fadeIn 0.5s ease;
+  animation: fadeIn 0.6s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(15px);
   }
   to {
     opacity: 1;
@@ -144,44 +157,176 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  padding: 0;
 }
 
 .results-header h2 {
-  color: var(--dark);
+  color: var(--text-dark);
   font-weight: 700;
+  font-size: 1.8rem;
+  margin: 0;
 }
 
+.results-badges {
+  display: flex;
+  align-items: center;
+}
+
+/* Updated Grid for better content distribution */
 .results-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1.5rem;
+  grid-template-columns: 1fr 2fr; /* Sidebar: 1 part, Main: 2 parts */
+  gap: 2rem;
+  align-items: start;
 }
 
 .main-results {
-  grid-column: 1;
+  grid-column: 2;
 }
 
 .sidebar-results {
-  grid-column: 2;
+  grid-column: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+  position: sticky;
+  top: 2rem;
 }
 
-/* Responsive design */
+/* Ensure consistent card heights */
+.sidebar-results > * {
+  min-height: auto;
+}
+
+/* --- 6. Code Health Gauge Styles --- */
+.code-health-gauge-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+.gauge-arc {
+  width: 120px;
+  height: 60px;
+  border: 8px solid;
+  border-top: none;
+  border-radius: 120px 120px 0 0;
+  position: relative;
+  margin-bottom: var(--space-md);
+  border-color: #e5e7eb;
+}
+
+.gauge-needle {
+  width: 2px;
+  height: 50px;
+  background: var(--primary);
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform-origin: bottom center;
+  transform: translateX(-50%) rotate(0deg);
+  transition: transform 0.5s ease;
+}
+
+.score-value {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: var(--space-xs);
+  line-height: 1;
+}
+
+.score-unit {
+  font-size: 1rem;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.score-label {
+  font-size: var(--font-size-sm);
+  color: var(--gray);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- 7. Recommendations Styles --- */
+.recommendations {
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--gray-light);
+}
+
+.recommendations h4 {
+  margin-bottom: var(--space-md);
+  color: var(--darker);
+}
+
+.repo-info {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--light);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  color: var(--gray);
+  text-align: center;
+}
+
+.metric-note {
+  font-size: var(--font-size-sm);
+  color: var(--gray);
+  margin-top: var(--space-sm);
+  line-height: 1.4;
+}
+
+/* --- 8. No Results State --- */
+.no-results {
+  text-align: center;
+  padding: var(--space-2xl);
+  color: var(--gray);
+  font-style: italic;
+}
+
+.no-data {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--gray);
+  font-style: italic;
+  grid-column: 1 / -1;
+}
+
+/* --- 9. Responsive Design --- */
+@media (max-width: 1200px) {
+  .results-grid {
+    grid-template-columns: 1fr 1.5fr;
+  }
+}
+
 @media (max-width: 900px) {
   .results-grid {
     grid-template-columns: 1fr;
+    gap: 2.5rem;
   }
 
   .main-results,
   .sidebar-results {
     grid-column: 1;
   }
+
+  .sidebar-results {
+    order: 1;
+    position: static;
+  }
+
+  .main-results {
+    order: 2;
+  }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .app-container {
     padding: 0 15px;
   }
@@ -190,5 +335,32 @@ body {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+
+  .results-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .app-main {
+    padding: 1.5rem 0;
+  }
+
+  .results-grid {
+    gap: 1.5rem;
+  }
+
+  .gauge-arc {
+    width: 100px;
+    height: 50px;
+  }
+
+  .score-value {
+    font-size: 1.5rem;
   }
 }

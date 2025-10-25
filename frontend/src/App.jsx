@@ -1,15 +1,10 @@
-// frontend/src/App.jsx
-
 import { useState } from "react";
-
-// Updated Imports
 import AnalysisTabs from "./components/AnalysisTabs";
-import PredictiveMetricsCard from "./components/PredictiveMetricsCard"; // RENAMED COMPONENT
+import PredictiveMetricsCard from "./components/PredictiveMetricsCard";
 import RepoForm from "./components/RepoForm";
 import PylintBadge from "./components/PylintBadge";
 import Header from "./components/Header";
 import ComplexityChart from "./components/ComplexityChart";
-
 import "./App.css";
 import "./components.css";
 
@@ -29,7 +24,6 @@ function App() {
       });
 
       if (!res.ok) {
-        // Attempt to read the error detail from the response body if available
         const errorData = await res
           .json()
           .catch(() => ({ detail: res.statusText }));
@@ -39,11 +33,6 @@ function App() {
       }
 
       const data = await res.json();
-      // The `data.results` object now contains:
-      // - code_health_score
-      // - ai_metrics
-      // - historical_risk_score
-      // - git_sha
       setResults(data.results);
     } catch (err) {
       setError(err.message);
@@ -79,28 +68,24 @@ function App() {
           </div>
         )}
 
-        {/* Display results only when available and not loading */}
         {results && !loading && (
           <div className="results-container">
             <div className="results-header">
-              {/* Display main CHS score (optional, but Pylint is good secondary metric) */}
               <h2>Analysis Results</h2>
               <div className="results-badges">
-                <PylintBadge score={results?.pylint?.score || 0} />
+                {results.pylint?.score && (
+                  <PylintBadge score={results.pylint.score} />
+                )}
               </div>
             </div>
 
             <div className="results-grid">
-              <div className="main-results">
-                {/* 1. Predictive Metrics Card (Sidebar) */}
+              <div className="sidebar-results">
                 <PredictiveMetricsCard results={results} />
-
-                {/* 2. Complexity Chart (Sidebar) - Kept it here for better grouping */}
-                <ComplexityChart radon={results.radon} />
+                {results.radon && <ComplexityChart radon={results.radon} />}
               </div>
 
-              {/* Static Analysis Tabs (Main Content Area) */}
-              <div className="sidebar-results">
+              <div className="main-results">
                 <AnalysisTabs results={results} />
               </div>
             </div>

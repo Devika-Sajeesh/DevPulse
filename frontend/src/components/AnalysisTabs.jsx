@@ -19,11 +19,16 @@ export default function AnalysisTabs({ results }) {
           <div className="tab-content">
             <h3>Cyclomatic Complexity</h3>
             <p>{results.radon?.summary || "No summary available"}</p>
-            <ul className="results-list">
+            <ul className="complexity-list">
               {results.radon?.entries?.length ? (
-                results.radon.entries.map((e, i) => <li key={i}>{e}</li>)
+                results.radon.entries.map((e, i) => (
+                  <li key={i} className="complexity-item">
+                    <span className="line-number">{i + 1}</span>
+                    {e}
+                  </li>
+                ))
               ) : (
-                <li>No complexity data</li>
+                <li className="complexity-item">No complexity data</li>
               )}
             </ul>
           </div>
@@ -57,15 +62,13 @@ export default function AnalysisTabs({ results }) {
                 <p className="score">
                   <strong>Score:</strong> {results.pylint.score ?? "N/A"}
                 </p>
-                <ul className="results-list">
-                  {results.pylint.issues?.length ? (
-                    results.pylint.issues.map((issue, idx) => (
-                      <li key={idx}>{issue}</li>
-                    ))
-                  ) : (
-                    <li>No pylint issues</li>
-                  )}
-                </ul>
+                <div className="pylint-report">
+                  <pre>
+                    {results.pylint.issues?.length
+                      ? results.pylint.issues.join("\n")
+                      : "No pylint issues found"}
+                  </pre>
+                </div>
               </>
             ) : (
               <p>No Pylint data available</p>
@@ -105,14 +108,14 @@ export default function AnalysisTabs({ results }) {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+            className={`tab-button ${activeTab === tab.id ? "active" : ""}`}
           >
             <i className={tab.icon}></i>
             {tab.name}
           </button>
         ))}
       </div>
-      <div className="tabs-content">{renderTab()}</div>
+      <div className="tab-content-container">{renderTab()}</div>
     </div>
   );
 }
