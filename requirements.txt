@@ -1,0 +1,7 @@
+# requirements.txt
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+radon
+gitpython # Add this line to include GitPython as a dependency

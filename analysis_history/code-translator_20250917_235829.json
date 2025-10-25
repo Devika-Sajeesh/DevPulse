@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-09-17T23:58:29.628125",
+  "radon": [
+    {
+      "line": "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpci52hj9m\\duo.py"
+    },
+    {
+      "line": "F 21:0 chatbot_ui - A (3)"
+    },
+    {
+      "line": "F 9:0 ai_chatbot - A (1)"
+    },
+    {
+      "line": "2 blocks (classes, functions, methods) analyzed."
+    },
+    {
+      "line": "Average complexity: A (2.0)"
+    }
+  ],
+  "cloc": {
+    "header": {
+      "cloc_url": "github.com/AlDanial/cloc",
+      "cloc_version": "2.06",
+      "elapsed_seconds": 0.139204978942871,
+      "n_files": 2,
+      "n_lines": 142,
+      "files_per_second": 14.3673021984421,
+      "lines_per_second": 1020.07845608939
+    },
+    "Markdown": {
+      "nFiles": 1,
+      "blank": 31,
+      "comment": 0,
+      "code": 54
+    },
+    "Python": {
+      "nFiles": 1,
+      "blank": 9,
+      "comment": 8,
+      "code": 40
+    },
+    "SUM": {
+      "blank": 40,
+      "comment": 8,
+      "code": 94,
+      "nFiles": 2
+    }
+  },
+  "pylint": {
+    "issues": [
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpci52hj9m\\duo.py:25:0: C0301: Line too long (102/100) (line-too-long)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpci52hj9m\\duo.py:26:0: C0303: Trailing whitespace (trailing-whitespace)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpci52hj9m\\duo.py:27:18: C0303: Trailing whitespace (trailing-whitespace)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpci52hj9m\\duo.py:57:0: C0304: Final newline missing (missing-final-newline)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpci52hj9m\\duo.py:1:0: C0114: Missing module docstring (missing-module-docstring)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpci52hj9m\\duo.py:9:0: C0116: Missing function or method docstring (missing-function-docstring)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpci52hj9m\\duo.py:2:0: C0411: standard import \"os\" should be placed before third party import \"streamlit\" (wrong-import-order)",
+      "C:\\Users\\acer\\AppData\\Local\\Temp\\tmpci52hj9m\\duo.py:2:0: W0611: Unused import os (unused-import)",
+      "-----------------------------------",
+      "Your code has been rated at 4.76/10"
+    ],
+    "summary": "Your code has been rated at 4.76/10"
+  },
+  "ai_summary": "**Code Quality, Complexity, and Maintainability Summary**\n\nBased on the Radon, Cloc, and Pylint reports, the code has some areas of improvement for quality, complexity, and maintainability.\n\n**Complexity:**\nThe Radon report indicates an average complexity of A (2.0), which is relatively low. This suggests that the code is not overly complex and is manageable.\n\n**Quality:**\nThe Pylint report highlights several issues, including:\n* Long lines and trailing whitespace, indicating a need for better code formatting.\n* Missing docstrings for the module and functions, making it harder for others to understand the code.\n* Incorrect import order and unused imports, which can lead to confusion and potential errors.\nThe Pylint score of 4.76/10 suggests that the code quality is below average.\n\n**Maintainability:**\nThe Cloc report shows that the code is relatively small, with 142 lines across 2 files. The code-to-blank/comment ratio is decent, with 94 lines of code, 40 blank lines, and 8 comment lines. However, the lack of docstrings and formatting issues may make it harder for others to maintain and understand the code.\n\n**Recommendations:**\nTo improve code quality, complexity, and maintainability:\n1. **Refactor code**: Address Pylint issues, such as long lines, trailing whitespace, and missing docstrings.\n2. **Improve formatting**: Use a consistent coding style and consider using an auto-formatter.\n3. **Optimize imports**: Remove unused imports and reorder them to follow standard conventions.\n4. **Add documentation**: Include docstrings for the module and functions to improve code readability and understandability.\n\nBy addressing these areas, the code quality, complexity, and maintainability can be improved, making it easier for developers to work with and maintain the codebase."
+}
