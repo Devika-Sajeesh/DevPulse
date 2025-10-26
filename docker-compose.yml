@@ -1,0 +1,34 @@
+# devika-sajeesh/devpulse/docker-compose.yml
+
+version: "3.8"
+
+services:
+  devpulse-api:
+    build: .
+    container_name: devpulse_api
+    restart: unless-stopped
+    # Mount the .env file if necessary, but keep keys out of the image if possible
+    env_file:
+      - ./.env
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist the database and the ML model file
+      - ./devpulse.db:/app/devpulse.db
+      - ./ml/historical_risk_model.joblib:/app/ml/historical_risk_model.joblib
+
+  # analysis-sandbox is a worker container used for secure execution.
+  # We won't run it constantly; it's here to define the image.
+  analysis-sandbox:
+    image: python:3.11-slim
+    container_name: analysis_sandbox_image
+    # We define the minimum tools needed inside the sandbox worker
+    user: nobody # IMPORTANT: Run as a non-root user for security
+    volumes:
+      # Temporary volume for the analysis tools to clone code into
+      - analysis_workspace:/workspace
+    command: ["tail", "-f", "/dev/null"] # Keep it running for inspection, but usually this is short-lived
+
+volumes:
+  devpulse_data:
+  analysis_workspace:

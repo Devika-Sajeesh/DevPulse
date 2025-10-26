@@ -8,12 +8,14 @@ import traceback
 from backend.services.analyzer import analyze_single_repo
 from backend.utils.translator import get_translation
 from backend.services.db_service import init_db, save_report, list_reports, get_report
+from backend.services.predictor import load_ml_model
 
 # Init app
 app = FastAPI()
 
 # Init DB on startup
 init_db() # Run this once to update the schema! If you have old data, you might need to drop the table first.
+load_ml_model()
 
 # CORS for frontend
 origins = ["http://localhost:3000"]
