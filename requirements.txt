@@ -5,7 +5,8 @@ python-multipart
 pydantic
 radon
 gitpython 
-scikit-learn  
+scikit-learn==1.6.1 
 numpy         
 joblib        
 docker
+httpx

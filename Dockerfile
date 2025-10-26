@@ -39,6 +39,8 @@ WORKDIR /app
 COPY requirements.txt .
 # Install Python dependencies including gitpython, scikit-learn
 RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install radon
+
 
 # Copy ML model and backend code
 COPY ml ./ml

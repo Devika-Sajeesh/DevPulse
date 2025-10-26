@@ -38,6 +38,8 @@ def extract_features_for_prediction(parsed_analysis: Dict[str, Any], ai_probabil
     """
     # 1. Normalize Static Score (0-1)
     pylint_score = parsed_analysis["pylint"].get("score", 5.0)
+    if pylint_score is None:
+        pylint_score = 5.0  # safe midpoint fallback
     static_score_normalized = pylint_score / 10.0
 
     # 2. AI Probability (0-1)

@@ -31,7 +31,7 @@ load_dotenv()
 EXECUTOR = ThreadPoolExecutor(max_workers=4)
 
 # Define the image that would execute the analysis commands securely
-SANDBOX_IMAGE = os.getenv("SANDBOX_IMAGE", "python:3.11-slim") # Use slim python as a safe default
+SANDBOX_IMAGE = os.getenv("SANDBOX_IMAGE", "devpulse-sandbox") # Use slim python as a safe default
 
 # --- NEW: Docker Sandboxed Command Execution Logic ---
 async def run_sandboxed_command(*args: str, repo_path: str) -> str:
@@ -71,7 +71,7 @@ async def run_sandboxed_command(*args: str, repo_path: str) -> str:
                 volumes={repo_path: {'bind': container_repo_path, 'mode': 'ro'}},
                 remove=True,  # Automatically remove container on exit
                 detach=False, # Wait for command to complete
-                user=1000     # Run as a non-root user (good practice)
+                user="root"     
             )
             return container.decode('utf-8')
 
@@ -117,6 +117,8 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
         radon_parsed = parse_radon_output(radon_out) or {}
         cloc_parsed = parse_cloc_output(cloc_out) or {"code": 0, "comment": 0, "blank": 0}
         pylint_parsed = parse_pylint_output(pylint_out) or {"score": None, "messages": []}
+        if pylint_parsed.get("score") is None:
+            pylint_parsed["score"] = 5.0
 
         parsed = {
             "repo_url": repo_url,
