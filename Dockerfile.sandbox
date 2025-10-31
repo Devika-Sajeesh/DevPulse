@@ -1,0 +1,22 @@
+FROM python:3.11-slim
+
+# Install system dependencies including cloc and build essentials
+RUN apt-get update && apt-get install -y \
+    cloc \
+    git \
+    gcc \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Install Python analysis tools
+RUN pip install --no-cache-dir \
+    radon \
+    pylint
+
+# Create a non-root user for security (but keep root for file permissions)
+RUN useradd -m analyzer
+
+WORKDIR /repo
+
+# Keep container running
+CMD ["tail", "-f", "/dev/null"]

@@ -26,12 +26,21 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONPATH /app
 
-# Install system dependencies needed for Git and Uvicorn
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     git \
     gcc \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release \
     && rm -rf /var/lib/apt/lists/*
+
+# Install Docker CLI (client only, no daemon)
+RUN apt-get update && \
+    apt-get install -y docker-cli && \
+    rm -rf /var/lib/apt/lists/*
+
 
 WORKDIR /app
 

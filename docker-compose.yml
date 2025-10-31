@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   devpulse-api:
     build: .
@@ -13,6 +11,8 @@ services:
       - ./devpulse.db:/app/devpulse.db
       - ./ml/historical_risk_model.joblib:/app/ml/historical_risk_model.joblib
       - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - analysis-sandbox
     environment:
       SANDBOX_IMAGE: devpulse-sandbox
 
@@ -20,12 +20,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.sandbox
+    image: devpulse-sandbox
     container_name: analysis_sandbox_image
-    user: root # root is safe here because we mount host temp dirs
-    volumes:
-      - analysis_workspace:/workspace
-    command: ["tail", "-f", "/dev/null"]
-
-volumes:
-  devpulse_data:
-  analysis_workspace:
+    user: root
