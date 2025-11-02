@@ -10,16 +10,21 @@ services:
     volumes:
       - ./devpulse.db:/app/devpulse.db
       - ./ml/historical_risk_model.joblib:/app/ml/historical_risk_model.joblib
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - analysis-sandbox
+      - /var/run/docker.sock:/var/run/docker.sock # Critical for Docker-in-Docker
     environment:
       SANDBOX_IMAGE: devpulse-sandbox
+      PYTHONUNBUFFERED: 1
+    # Build the sandbox image first
+    depends_on:
+      analysis-sandbox:
+        condition: service_completed_successfully
 
+  # This builds the sandbox image but doesn't run a persistent container
   analysis-sandbox:
     build:
       context: .
       dockerfile: Dockerfile.sandbox
     image: devpulse-sandbox
-    container_name: analysis_sandbox_image
-    user: root
+    container_name: analysis_sandbox_builder
+    command: echo "Sandbox image built successfully"
+    # This exits immediately after building

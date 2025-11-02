@@ -1,4 +1,4 @@
-# backend/services/analyzer.py (Updated with Docker SDK logic)
+# backend/services/analyzer.py (FIXED VERSION)
 
 import asyncio
 import tempfile
@@ -6,9 +6,8 @@ import shutil
 import os
 from typing import Dict, Any, Tuple
 from concurrent.futures import ThreadPoolExecutor
-import subprocess
-import time  # For unique volume naming
-# Try to import the docker client (will only work if 'docker' is installed)
+
+# Try to import the docker client
 try:
     import docker 
     DOCKER_CLIENT = docker.from_env()
@@ -16,7 +15,6 @@ try:
 except ImportError:
     DOCKER_CLIENT = None
     DOCKER_SANDBOX_ENABLED = False
-
 
 from backend.utils.radon_parser import parse_radon_output
 from backend.utils.cloc_parser import parse_cloc_output
@@ -30,27 +28,28 @@ load_dotenv()
 
 EXECUTOR = ThreadPoolExecutor(max_workers=4)
 
-# Define the image that would execute the analysis commands securely
-SANDBOX_IMAGE = os.getenv("SANDBOX_IMAGE", "devpulse-sandbox") 
-SANDBOX_IMAGE = os.getenv("SANDBOX_IMAGE", "python:3.11-slim")
+SANDBOX_IMAGE = os.getenv("SANDBOX_IMAGE", "devpulse-sandbox")
 print(f"[SANDBOX] Using Docker image: {SANDBOX_IMAGE}")
 
 
 async def run_sandboxed_command(*args: str, repo_path: str) -> str:
     """
     Executes a command inside an isolated Docker container if enabled, 
-    otherwise falls back to insecure direct execution.
+    otherwise falls back to direct execution.
+    
+    FIXED: Proper error handling, correct return type handling, and path mapping.
     """
     if not DOCKER_SANDBOX_ENABLED:
         print(f"[SANDBOX] Running on host: {' '.join(args)}")
         loop = asyncio.get_running_loop()
         def _run():
             try:
+                import subprocess
                 cmd = [str(a) for a in args]
                 result = subprocess.run(cmd, capture_output=True, text=True, cwd=repo_path, timeout=120)
                 if result.returncode != 0:
                     print(f"[SANDBOX] Command failed (code {result.returncode}): {result.stderr}")
-                    return f""
+                    return ""
                 return result.stdout
             except subprocess.TimeoutExpired:
                 print(f"[SANDBOX] Command timed out")
@@ -67,11 +66,14 @@ async def run_sandboxed_command(*args: str, repo_path: str) -> str:
     def _run_in_docker():
         container_repo_path = "/repo"
         
-        # Build command for docker - use relative paths inside container
+        # Convert all commands - replace paths with container paths
         cmd_for_docker = []
         for arg in args:
-            # Replace the repo path with the container path
-            if os.path.abspath(str(arg)) == os.path.abspath(repo_path):
+            # Replace '.' with container path for current directory references
+            if arg == '.':
+                cmd_for_docker.append(container_repo_path)
+            # Replace absolute repo path with container path
+            elif os.path.isabs(str(arg)) and os.path.abspath(str(arg)) == os.path.abspath(repo_path):
                 cmd_for_docker.append(container_repo_path)
             else:
                 cmd_for_docker.append(str(arg))
@@ -80,37 +82,59 @@ async def run_sandboxed_command(*args: str, repo_path: str) -> str:
         print(f"[SANDBOX] Mounting: {repo_path} -> {container_repo_path}")
         
         try:
-            # Ensure the repo directory exists and has proper permissions
+            # Ensure the repo directory exists
             if not os.path.exists(repo_path):
                 raise Exception(f"Repo path does not exist: {repo_path}")
+            
+            # FIXED: Proper handling of containers.run return value
+            try:
+                output = DOCKER_CLIENT.containers.run(
+                    SANDBOX_IMAGE,
+                    command=cmd_for_docker,
+                    volumes={repo_path: {'bind': container_repo_path, 'mode': 'ro'}},
+                    working_dir=container_repo_path,
+                    remove=True,  # Auto-remove after completion
+                    detach=False,  # Wait for completion and return output
+                    stdout=True,
+                    stderr=True,
+                    user="root",
+                    mem_limit="512m",
+                    network_mode="none"
+                )
                 
-            container_output = DOCKER_CLIENT.containers.run(
-                SANDBOX_IMAGE,
-                command=cmd_for_docker,
-                volumes={repo_path: {'bind': container_repo_path, 'mode': 'ro'}},
-                working_dir=container_repo_path,
-                remove=True,
-                detach=False,
-                stdout=True,
-                stderr=True,
-                user="root",  # Use root to avoid permission issues
-                mem_limit="512m",  # Add memory limit
-                network_mode="none"  # Disable network for security
-            )
-            
-            output = container_output.decode('utf-8') if isinstance(container_output, bytes) else str(container_output)
-            print(f"[SANDBOX] Command successful, output length: {len(output)}")
-            return output
-            
-        except docker.errors.ContainerError as e:
-            error_msg = e.stderr.decode('utf-8') if e.stderr else str(e)
-            print(f"[SANDBOX] Container error: {error_msg}")
-            return ""
+                # Decode output properly
+                if isinstance(output, bytes):
+                    result = output.decode('utf-8', errors='ignore')
+                else:
+                    result = str(output)
+                    
+                print(f"[SANDBOX] Command successful, output length: {len(result)}")
+                return result
+                
+            except docker.errors.ContainerError as e:
+                # FIXED: Handle non-zero exit codes properly
+                error_msg = e.stderr.decode('utf-8', errors='ignore') if e.stderr else str(e)
+                print(f"[SANDBOX] Container error (exit code {e.exit_status}): {error_msg}")
+                
+                # For some tools (like pylint), non-zero exit is normal
+                # Return stdout if available
+                if e.stderr:
+                    stdout = getattr(e, 'stdout', b'')
+                    if stdout:
+                        return stdout.decode('utf-8', errors='ignore')
+                return ""
+                
         except docker.errors.ImageNotFound:
             print(f"[SANDBOX] Image not found: {SANDBOX_IMAGE}")
+            print(f"[SANDBOX] Please build the image: docker build -f Dockerfile.sandbox -t {SANDBOX_IMAGE} .")
+            return ""
+        except docker.errors.APIError as e:
+            print(f"[SANDBOX] Docker API error: {str(e)}")
             return ""
         except Exception as e:
             print(f"[SANDBOX] Docker execution error: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return ""
             
     return await loop.run_in_executor(EXECUTOR, _run_in_docker)
@@ -118,16 +142,14 @@ async def run_sandboxed_command(*args: str, repo_path: str) -> str:
 
 async def clone_repo_async(repo_url: str, dest_dir: str) -> Tuple[str, str]:
     loop = asyncio.get_running_loop()
-    # clone_repo now returns (path, sha)
-    return await loop.run_in_executor(EXECUTOR, clone_repo, repo_url, dest_dir) 
+    return await loop.run_in_executor(EXECUTOR, clone_repo, repo_url, dest_dir)
 
-# The old run_command_async function is now implicitly replaced by run_sandboxed_command.
 
 RADON_PATH = "radon"
 PYLINT_PATH = "pylint"
 CLOC_PATH = "cloc"
 
-# In analyzer.py - UPDATED analyze_single_repo function
+
 async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
     temp_dir = tempfile.mkdtemp()
     print(f"[ANALYZER] Starting analysis for: {repo_url}")
@@ -143,24 +165,27 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
         if not repo_path or not os.path.exists(repo_path):
             raise Exception(f"Repository clone failed for: {repo_url}")
 
-        # 2. Define commands
+        # 2. Define commands (use '.' for current directory)
         radon_cmd = [RADON_PATH, "cc", ".", "-s", "-a"]
         cloc_cmd = [CLOC_PATH, ".", "--json"]
-        pylint_cmd = [PYLINT_PATH, ".", "-f", "json", "--exit-zero"]  # Changed to JSON format for easier parsing
+        pylint_cmd = [PYLINT_PATH, ".", "-f", "text", "--exit-zero"]
         
         print(f"[ANALYZER] Running analysis tools...")
         
         # 3. Run tools with better error handling
         try:
-            radon_out, cloc_out, pylint_out = await asyncio.gather(
+            results = await asyncio.gather(
                 run_sandboxed_command(*radon_cmd, repo_path=repo_path),
                 run_sandboxed_command(*cloc_cmd, repo_path=repo_path),
                 run_sandboxed_command(*pylint_cmd, repo_path=repo_path),
-                return_exceptions=True  # This prevents one failure from stopping all
+                return_exceptions=True
             )
+            
+            radon_out, cloc_out, pylint_out = results
+            
         except Exception as e:
             print(f"[ANALYZER] Tool execution failed: {e}")
-            raise
+            radon_out, cloc_out, pylint_out = "", "", ""
 
         # 4. Handle individual tool failures
         tools_output = []
@@ -170,6 +195,9 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
                 tools_output.append("")
             else:
                 print(f"[ANALYZER] {name} output length: {len(str(output))}")
+                # Debug: print first 200 chars
+                if output:
+                    print(f"[ANALYZER] {name} preview: {str(output)[:200]}")
                 tools_output.append(output)
 
         radon_out, cloc_out, pylint_out = tools_output
@@ -199,7 +227,7 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
             ai_metrics = await generate_ai_metrics(radon_out, cloc_out, pylint_out)
         except Exception as e:
             print(f"[ANALYZER] AI metrics generation failed: {e}")
-            ai_metrics = {"ai_probability": 0.0, "summary": "AI analysis failed"}
+            ai_metrics = {"ai_probability": 0.0, "ai_risk_notes": "AI analysis failed", "recommendations": []}
 
         # 7. Calculate Predictive Scores
         ai_probability = ai_metrics.get("ai_probability", 0.0)
@@ -232,7 +260,7 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
             "radon": {},
             "cloc": {"code": 0, "comment": 0, "blank": 0},
             "pylint": {"score": 5.0, "messages": []},
-            "ai_metrics": {"ai_probability": 0.0, "summary": "Analysis failed"},
+            "ai_metrics": {"ai_probability": 0.0, "ai_risk_notes": "Analysis failed", "recommendations": []},
             "code_health_score": 0.0,
             "historical_risk_score": 1.0
         }
