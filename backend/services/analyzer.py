@@ -1,4 +1,3 @@
-# backend/services/analyzer.py (FIXED VERSION)
 
 import asyncio
 import tempfile
@@ -10,18 +9,23 @@ from concurrent.futures import ThreadPoolExecutor
 # Try to import the docker client
 try:
     import docker 
-    DOCKER_CLIENT = docker.from_env()
-    DOCKER_SANDBOX_ENABLED = True
+    try:
+        DOCKER_CLIENT = docker.from_env()
+        DOCKER_SANDBOX_ENABLED = True
+    except Exception as e:
+        print(f"[WARNING] Docker not available: {e}")
+        DOCKER_CLIENT = None
+        DOCKER_SANDBOX_ENABLED = False
 except ImportError:
     DOCKER_CLIENT = None
     DOCKER_SANDBOX_ENABLED = False
 
-from backend.utils.radon_parser import parse_radon_output
-from backend.utils.cloc_parser import parse_cloc_output
-from backend.utils.pylint_parser import parse_pylint_output
 from backend.services.ai_summary import generate_ai_metrics 
 from backend.utils.repo_downloader import clone_repo 
 from backend.services.predictor import calculate_chs, get_historical_risk_score, extract_features_for_prediction
+from backend.utils.radon_parser import parse_radon_output
+from backend.utils.cloc_parser import parse_cloc_output
+from backend.utils.pylint_parser import parse_pylint_output
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -46,7 +50,9 @@ async def run_sandboxed_command(*args: str, repo_path: str) -> str:
             try:
                 import subprocess
                 cmd = [str(a) for a in args]
-                result = subprocess.run(cmd, capture_output=True, text=True, cwd=repo_path, timeout=120)
+                # On Windows, scripts like .cmd need shell=True
+                use_shell = os.name == 'nt'
+                result = subprocess.run(cmd, capture_output=True, text=True, cwd=repo_path, timeout=120, shell=use_shell)
                 if result.returncode != 0:
                     print(f"[SANDBOX] Command failed (code {result.returncode}): {result.stderr}")
                     return ""
@@ -167,7 +173,8 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
 
         # 2. Define commands (use '.' for current directory)
         radon_cmd = [RADON_PATH, "cc", ".", "-s", "-a"]
-        cloc_cmd = [CLOC_PATH, ".", "--json"]
+        # Use radon raw as fallback for cloc since perl might be missing
+        cloc_cmd = [RADON_PATH, "raw", ".", "-s"]
         pylint_cmd = [PYLINT_PATH, ".", "-f", "text", "--exit-zero"]
         
         print(f"[ANALYZER] Running analysis tools...")

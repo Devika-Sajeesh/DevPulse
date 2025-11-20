@@ -10,3 +10,5 @@ numpy
 joblib        
 docker
 httpx
+pytest
+pytest-asyncio
