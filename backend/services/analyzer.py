@@ -1,3 +1,4 @@
+# backend/services/analyzer.py (Critical Fixes)
 
 import asyncio
 import tempfile
@@ -6,7 +7,6 @@ import os
 from typing import Dict, Any, Tuple
 from concurrent.futures import ThreadPoolExecutor
 
-# Try to import the docker client
 try:
     import docker 
     try:
@@ -31,18 +31,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 EXECUTOR = ThreadPoolExecutor(max_workers=4)
-
 SANDBOX_IMAGE = os.getenv("SANDBOX_IMAGE", "devpulse-sandbox")
+
 print(f"[SANDBOX] Using Docker image: {SANDBOX_IMAGE}")
+print(f"[SANDBOX] Docker enabled: {DOCKER_SANDBOX_ENABLED}")
 
 
 async def run_sandboxed_command(*args: str, repo_path: str) -> str:
-    """
-    Executes a command inside an isolated Docker container if enabled, 
-    otherwise falls back to direct execution.
+    """Executes a command inside Docker container or on host."""
     
-    FIXED: Proper error handling, correct return type handling, and path mapping.
-    """
     if not DOCKER_SANDBOX_ENABLED:
         print(f"[SANDBOX] Running on host: {' '.join(args)}")
         loop = asyncio.get_running_loop()
@@ -50,12 +47,19 @@ async def run_sandboxed_command(*args: str, repo_path: str) -> str:
             try:
                 import subprocess
                 cmd = [str(a) for a in args]
-                # On Windows, scripts like .cmd need shell=True
                 use_shell = os.name == 'nt'
-                result = subprocess.run(cmd, capture_output=True, text=True, cwd=repo_path, timeout=120, shell=use_shell)
-                if result.returncode != 0:
-                    print(f"[SANDBOX] Command failed (code {result.returncode}): {result.stderr}")
-                    return ""
+                result = subprocess.run(
+                    cmd, 
+                    capture_output=True, 
+                    text=True, 
+                    cwd=repo_path, 
+                    timeout=120, 
+                    shell=use_shell
+                )
+                if result.returncode != 0 and result.returncode != 1:
+                    # Note: pylint returns non-zero for issues, which is normal
+                    print(f"[SANDBOX] Command returned code {result.returncode}")
+                    print(f"[SANDBOX] stderr: {result.stderr[:500]}")
                 return result.stdout
             except subprocess.TimeoutExpired:
                 print(f"[SANDBOX] Command timed out")
@@ -72,35 +76,29 @@ async def run_sandboxed_command(*args: str, repo_path: str) -> str:
     def _run_in_docker():
         container_repo_path = "/repo"
         
-        # Convert all commands - replace paths with container paths
         cmd_for_docker = []
         for arg in args:
-            # Replace '.' with container path for current directory references
             if arg == '.':
                 cmd_for_docker.append(container_repo_path)
-            # Replace absolute repo path with container path
             elif os.path.isabs(str(arg)) and os.path.abspath(str(arg)) == os.path.abspath(repo_path):
                 cmd_for_docker.append(container_repo_path)
             else:
                 cmd_for_docker.append(str(arg))
         
         print(f"[SANDBOX] Docker command: {cmd_for_docker}")
-        print(f"[SANDBOX] Mounting: {repo_path} -> {container_repo_path}")
         
         try:
-            # Ensure the repo directory exists
             if not os.path.exists(repo_path):
                 raise Exception(f"Repo path does not exist: {repo_path}")
             
-            # FIXED: Proper handling of containers.run return value
             try:
                 output = DOCKER_CLIENT.containers.run(
                     SANDBOX_IMAGE,
                     command=cmd_for_docker,
                     volumes={repo_path: {'bind': container_repo_path, 'mode': 'ro'}},
                     working_dir=container_repo_path,
-                    remove=True,  # Auto-remove after completion
-                    detach=False,  # Wait for completion and return output
+                    remove=True,
+                    detach=False,
                     stdout=True,
                     stderr=True,
                     user="root",
@@ -108,7 +106,6 @@ async def run_sandboxed_command(*args: str, repo_path: str) -> str:
                     network_mode="none"
                 )
                 
-                # Decode output properly
                 if isinstance(output, bytes):
                     result = output.decode('utf-8', errors='ignore')
                 else:
@@ -118,27 +115,20 @@ async def run_sandboxed_command(*args: str, repo_path: str) -> str:
                 return result
                 
             except docker.errors.ContainerError as e:
-                # FIXED: Handle non-zero exit codes properly
                 error_msg = e.stderr.decode('utf-8', errors='ignore') if e.stderr else str(e)
-                print(f"[SANDBOX] Container error (exit code {e.exit_status}): {error_msg}")
+                print(f"[SANDBOX] Container error (exit {e.exit_status}): {error_msg[:200]}")
                 
-                # For some tools (like pylint), non-zero exit is normal
-                # Return stdout if available
-                if e.stderr:
-                    stdout = getattr(e, 'stdout', b'')
-                    if stdout:
-                        return stdout.decode('utf-8', errors='ignore')
+                # For tools like pylint, non-zero exit is normal
+                stdout = getattr(e, 'stdout', b'')
+                if stdout:
+                    return stdout.decode('utf-8', errors='ignore')
                 return ""
                 
         except docker.errors.ImageNotFound:
             print(f"[SANDBOX] Image not found: {SANDBOX_IMAGE}")
-            print(f"[SANDBOX] Please build the image: docker build -f Dockerfile.sandbox -t {SANDBOX_IMAGE} .")
-            return ""
-        except docker.errors.APIError as e:
-            print(f"[SANDBOX] Docker API error: {str(e)}")
             return ""
         except Exception as e:
-            print(f"[SANDBOX] Docker execution error: {str(e)}")
+            print(f"[SANDBOX] Docker error: {str(e)}")
             import traceback
             traceback.print_exc()
             return ""
@@ -151,35 +141,35 @@ async def clone_repo_async(repo_url: str, dest_dir: str) -> Tuple[str, str]:
     return await loop.run_in_executor(EXECUTOR, clone_repo, repo_url, dest_dir)
 
 
-RADON_PATH = "radon"
-PYLINT_PATH = "pylint"
-CLOC_PATH = "cloc"
-
-
 async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
     temp_dir = tempfile.mkdtemp()
+    print(f"\n{'='*70}")
     print(f"[ANALYZER] Starting analysis for: {repo_url}")
-    print(f"[ANALYZER] Using temp directory: {temp_dir}")
+    print(f"[ANALYZER] Temp directory: {temp_dir}")
+    print(f"{'='*70}\n")
     
     try:
-        # 1. Clone Repo
-        print(f"[ANALYZER] Cloning repository...")
+        # 1. Clone repository
+        print(f"[ANALYZER] Step 1: Cloning repository...")
         repo_path, commit_sha = await clone_repo_async(repo_url, temp_dir)
-        print(f"[ANALYZER] Cloned to: {repo_path}, SHA: {commit_sha}")
+        print(f"[ANALYZER] ✓ Cloned to: {repo_path}")
+        print(f"[ANALYZER] ✓ Commit SHA: {commit_sha}\n")
         
-        # Verify clone was successful
         if not repo_path or not os.path.exists(repo_path):
-            raise Exception(f"Repository clone failed for: {repo_url}")
+            raise Exception(f"Repository clone failed")
 
-        # 2. Define commands (use '.' for current directory)
-        radon_cmd = [RADON_PATH, "cc", ".", "-s", "-a"]
-        # Use radon raw as fallback for cloc since perl might be missing
-        cloc_cmd = [RADON_PATH, "raw", ".", "-s"]
-        pylint_cmd = [PYLINT_PATH, ".", "-f", "text", "--exit-zero"]
+        # 2. Define tool commands
+        # IMPORTANT: Use specific paths and flags that work reliably
+        radon_cmd = ["radon", "cc", ".", "-s", "-a"]  # Cyclomatic complexity
+        cloc_cmd = ["cloc", ".", "--json"]  # JSON output for easier parsing
+        pylint_cmd = ["pylint", ".", "--output-format=text", "--exit-zero"]
         
-        print(f"[ANALYZER] Running analysis tools...")
+        print(f"[ANALYZER] Step 2: Running analysis tools...")
+        print(f"  - Radon: {' '.join(radon_cmd)}")
+        print(f"  - CLOC: {' '.join(cloc_cmd)}")
+        print(f"  - Pylint: {' '.join(pylint_cmd)}\n")
         
-        # 3. Run tools with better error handling
+        # 3. Run all tools concurrently
         try:
             results = await asyncio.gather(
                 run_sandboxed_command(*radon_cmd, repo_path=repo_path),
@@ -191,33 +181,38 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
             radon_out, cloc_out, pylint_out = results
             
         except Exception as e:
-            print(f"[ANALYZER] Tool execution failed: {e}")
+            print(f"[ANALYZER] ✗ Tool execution failed: {e}")
             radon_out, cloc_out, pylint_out = "", "", ""
 
-        # 4. Handle individual tool failures
-        tools_output = []
-        for name, output in [("radon", radon_out), ("cloc", cloc_out), ("pylint", pylint_out)]:
+        # 4. Log raw outputs for debugging
+        print(f"[ANALYZER] Step 3: Processing tool outputs...")
+        for name, output in [("Radon", radon_out), ("CLOC", cloc_out), ("Pylint", pylint_out)]:
             if isinstance(output, Exception):
-                print(f"[ANALYZER] {name} failed: {output}")
-                tools_output.append("")
+                print(f"  ✗ {name}: FAILED - {output}")
+            elif output:
+                print(f"  ✓ {name}: {len(str(output))} chars")
+                print(f"    Preview: {str(output)[:150]}...")
             else:
-                print(f"[ANALYZER] {name} output length: {len(str(output))}")
-                # Debug: print first 200 chars
-                if output:
-                    print(f"[ANALYZER] {name} preview: {str(output)[:200]}")
-                tools_output.append(output)
+                print(f"  ⚠ {name}: Empty output")
+        print()
 
-        radon_out, cloc_out, pylint_out = tools_output
-
-        # 5. Parse outputs with fallbacks
-        print(f"[ANALYZER] Parsing results...")
-        radon_parsed = parse_radon_output(radon_out) if radon_out else {}
-        cloc_parsed = parse_cloc_output(cloc_out) if cloc_out else {"code": 0, "comment": 0, "blank": 0}
-        pylint_parsed = parse_pylint_output(pylint_out) if pylint_out else {"score": 5.0, "messages": []}
+        # 5. Parse tool outputs
+        print(f"[ANALYZER] Step 4: Parsing results...")
+        radon_parsed = parse_radon_output(radon_out if not isinstance(radon_out, Exception) else "")
+        cloc_parsed = parse_cloc_output(cloc_out if not isinstance(cloc_out, Exception) else "")
+        pylint_parsed = parse_pylint_output(pylint_out if not isinstance(pylint_out, Exception) else "")
         
-        # Ensure pylint score exists
-        if pylint_parsed.get("score") is None:
+        # Ensure required fields exist
+        if not radon_parsed:
+            radon_parsed = {"average_complexity": 0, "total_functions": 0, "blocks": [], "total_complexity": 0}
+        if not cloc_parsed:
+            cloc_parsed = {"code": 0, "comment": 0, "blank": 0, "languages": {}, "total_files": 0}
+        if "score" not in pylint_parsed or pylint_parsed["score"] is None:
             pylint_parsed["score"] = 5.0
+        
+        print(f"  ✓ Radon: {radon_parsed.get('total_functions', 0)} functions, avg complexity {radon_parsed.get('average_complexity', 0)}")
+        print(f"  ✓ CLOC: {cloc_parsed.get('code', 0)} lines of code, {cloc_parsed.get('total_files', 0)} files")
+        print(f"  ✓ Pylint: Score {pylint_parsed.get('score', 0)}/10\n")
 
         parsed = {
             "repo_url": repo_url,
@@ -227,54 +222,76 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
             "pylint": pylint_parsed,
         }
 
-        print(f"[ANALYZER] Basic parsing complete. Generating AI metrics...")
-        
-        # 6. Generate AI Metrics with error handling
+        # 6. Generate AI metrics
+        print(f"[ANALYZER] Step 5: Generating AI insights...")
         try:
-            ai_metrics = await generate_ai_metrics(radon_out, cloc_out, pylint_out)
+            ai_metrics = await generate_ai_metrics(
+                str(radon_out) if radon_out else "", 
+                str(cloc_out) if cloc_out else "", 
+                str(pylint_out) if pylint_out else ""
+            )
+            print(f"  ✓ AI Probability: {ai_metrics.get('ai_probability', 0):.2%}")
+            print(f"  ✓ Risk Notes: {ai_metrics.get('ai_risk_notes', 'N/A')}\n")
         except Exception as e:
-            print(f"[ANALYZER] AI metrics generation failed: {e}")
-            ai_metrics = {"ai_probability": 0.0, "ai_risk_notes": "AI analysis failed", "recommendations": []}
+            print(f"  ✗ AI metrics generation failed: {e}\n")
+            ai_metrics = {
+                "ai_probability": 0.0, 
+                "ai_risk_notes": "AI analysis unavailable", 
+                "recommendations": []
+            }
 
-        # 7. Calculate Predictive Scores
-        ai_probability = ai_metrics.get("ai_probability", 0.0)
-        
+        # 7. Calculate predictive scores
+        print(f"[ANALYZER] Step 6: Calculating predictive scores...")
         try:
+            ai_probability = ai_metrics.get("ai_probability", 0.0)
             feature_vector = extract_features_for_prediction(parsed, ai_probability)
             historical_risk = get_historical_risk_score(repo_url, commit_sha, feature_vector)
             code_health_score = calculate_chs(parsed, ai_probability, historical_risk)
+            
+            print(f"  ✓ Code Health Score: {code_health_score}/100")
+            print(f"  ✓ Historical Risk: {historical_risk:.2%}\n")
         except Exception as e:
-            print(f"[ANALYZER] Score calculation failed: {e}")
+            print(f"  ✗ Score calculation failed: {e}\n")
+            import traceback
+            traceback.print_exc()
             historical_risk = 0.5
             code_health_score = 50.0
 
-        # 8. Assemble Final Results
-        parsed["ai_metrics"] = ai_metrics 
-        parsed["code_health_score"] = code_health_score 
+        # 8. Assemble final results
+        parsed["ai_metrics"] = ai_metrics
+        parsed["code_health_score"] = code_health_score
         parsed["historical_risk_score"] = historical_risk
 
-        print(f"[ANALYZER] Analysis complete. CHS: {code_health_score}")
+        print(f"{'='*70}")
+        print(f"[ANALYZER] ✓ Analysis Complete!")
+        print(f"  • Code Health Score: {code_health_score}/100")
+        print(f"  • AI Code Probability: {ai_probability:.1%}")
+        print(f"  • Historical Risk: {historical_risk:.1%}")
+        print(f"{'='*70}\n")
+        
         return parsed
 
     except Exception as e:
-        print(f"[ANALYZER] Critical error in analysis: {e}")
+        print(f"\n{'='*70}")
+        print(f"[ANALYZER] ✗ CRITICAL ERROR: {e}")
+        print(f"{'='*70}\n")
         import traceback
         traceback.print_exc()
-        # Return a minimal valid response instead of None
+        
+        # Return minimal valid response
         return {
             "repo_url": repo_url,
             "git_sha": "unknown",
-            "radon": {},
-            "cloc": {"code": 0, "comment": 0, "blank": 0},
-            "pylint": {"score": 5.0, "messages": []},
+            "radon": {"average_complexity": 0, "total_functions": 0, "blocks": [], "total_complexity": 0},
+            "cloc": {"code": 0, "comment": 0, "blank": 0, "languages": {}, "total_files": 0},
+            "pylint": {"score": 0.0, "issues": []},
             "ai_metrics": {"ai_probability": 0.0, "ai_risk_notes": "Analysis failed", "recommendations": []},
             "code_health_score": 0.0,
             "historical_risk_score": 1.0
         }
     finally:
-        # Cleanup
         try:
             shutil.rmtree(temp_dir, ignore_errors=True)
-            print(f"[ANALYZER] Cleaned up temp directory: {temp_dir}")
+            print(f"[ANALYZER] Cleaned up: {temp_dir}\n")
         except Exception as e:
-            print(f"[ANALYZER] Cleanup warning: {e}")
+            print(f"[ANALYZER] Cleanup warning: {e}\n")
