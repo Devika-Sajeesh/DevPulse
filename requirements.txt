@@ -1,14 +1,45 @@
-# requirements.txt
-fastapi
-uvicorn[standard]
-python-multipart
-pydantic
-radon
-gitpython 
-scikit-learn==1.6.1 
-numpy         
-joblib        
-docker
-httpx
-pytest
-pytest-asyncio
+# Core Framework
+fastapi==0.115.5
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+pydantic==2.10.3
+pydantic-settings==2.7.0
+
+# Analysis Tools
+radon==6.0.1
+pylint==3.3.2
+
+# Git Operations
+gitpython==3.1.43
+
+# Machine Learning
+scikit-learn==1.6.1
+numpy==2.2.1
+joblib==1.4.2
+
+# Docker Integration
+docker==7.1.0
+
+# HTTP Client
+httpx==0.28.1
+
+# Database
+alembic==1.14.0
+sqlalchemy==2.0.36
+
+# Testing
+pytest==8.3.4
+pytest-asyncio==0.25.2
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+
+# Code Quality
+black==24.10.0
+mypy==1.13.0
+bandit==1.8.0
+safety==3.2.11
+
+# Utilities
+python-dotenv==1.0.1
+tenacity==9.0.0  # Retry logic
+slowapi==0.1.9  # Rate limiting

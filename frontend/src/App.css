@@ -1,51 +1,103 @@
-/* frontend/src/App.css - Refactored for DevPulse */
+/* DevPulse - Modern Premium UI Design */
 
-/* --- 1. Variables and Global Reset (Refined Palette) --- */
+/* ============================================
+   1. CSS VARIABLES & DESIGN TOKENS
+   ============================================ */
 :root {
-  /* Branding & Accent Colors */
-  --primary: #5a5fef;
-  --primary-dark: #4a4edf;
-  --secondary: #06b6d4;
-
+  /* Brand Colors - Vibrant Gradients */
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --accent-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  
+  /* Solid Colors */
+  --primary: #667eea;
+  --primary-dark: #5568d3;
+  --primary-light: #8b9ef5;
+  --secondary: #764ba2;
+  --accent: #f5576c;
+  
   /* Status Colors */
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-
-  /* Neutral & Background Colors */
-  --bg-main: #fcfcfc;
-  --bg-page: #f2f4f7;
-  --text-dark: #1e293b;
-  --text-gray: #475569;
-  --border-light: #e2e8f0;
-
-  /* Spacing & Effects */
-  --spacing-unit: 1rem;
-  --radius-md: 8px;
-  --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05),
-    0 4px 6px -2px rgba(0, 0, 0, 0.03);
-  --transition: all 0.3s ease;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  
+  /* Neutral Colors - Dark Theme */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --surface: rgba(255, 255, 255, 0.05);
+  --surface-hover: rgba(255, 255, 255, 0.08);
+  
+  /* Text Colors */
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.3);
+  --glow: 0 0 20px rgba(102, 126, 234, 0.4);
+  
+  /* Spacing */
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.3s ease;
+  --transition-slow: 0.5s ease;
 }
 
+/* ============================================
+   2. GLOBAL RESET & BASE STYLES
+   ============================================ */
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
 body {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
-    sans-serif;
-  background-color: var(--bg-page);
-  color: var(--text-dark);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+  background: var(--bg-primary);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(102, 126, 234, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(118, 75, 162, 0.15) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-primary);
   line-height: 1.6;
-  margin: 0;
-  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-/* --- 2. Layout Structure --- */
+/* ============================================
+   3. LAYOUT STRUCTURE
+   ============================================ */
 .app-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 var(--spacing-unit);
+  padding: 0 var(--space-lg);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -53,99 +105,14 @@ body {
 
 .app-main {
   flex: 1;
-  padding: 2.5rem 0;
+  padding: var(--space-2xl) 0;
+  animation: fadeInUp 0.6s ease-out;
 }
 
-/* --- 3. Header and Footer --- */
-.app-footer {
-  text-align: center;
-  padding: 1.5rem 0;
-  color: var(--text-gray);
-  font-size: 0.85rem;
-  border-top: 1px solid var(--border-light);
-  margin-top: 3rem;
-}
-
-/* --- 4. Loading and Error States --- */
-.loading-container,
-.error-container {
-  text-align: center;
-  margin: 3rem auto;
-  padding: 2.5rem;
-  background: var(--bg-main);
-  border-radius: var(--radius-md);
-  box-shadow: var(--card-shadow);
-  max-width: 600px;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid var(--border-light);
-  border-top: 4px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1.5rem;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.loading-subtext {
-  color: var(--text-gray);
-  font-size: 0.9rem;
-  margin-top: 0.75rem;
-}
-
-.error-container {
-  border-left: 5px solid var(--color-danger);
-}
-
-.error-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  display: block;
-}
-
-.error-container h3 {
-  color: var(--color-danger);
-  margin-bottom: 0.5rem;
-}
-
-.retry-button {
-  background: var(--primary);
-  color: white;
-  border: none;
-  padding: 0.6rem 1.8rem;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-weight: 600;
-  margin-top: 1.5rem;
-  transition: var(--transition);
-  box-shadow: 0 4px 6px -1px rgba(90, 95, 239, 0.1),
-    0 2px 4px -1px rgba(90, 95, 239, 0.06);
-}
-
-.retry-button:hover {
-  background: var(--primary-dark);
-}
-
-/* --- 5. Results Layout --- */
-.results-container {
-  margin-top: 2rem;
-  animation: fadeIn 0.6s ease-out;
-}
-
-@keyframes fadeIn {
+@keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(15px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
@@ -153,214 +120,368 @@ body {
   }
 }
 
+/* ============================================
+   4. HEADER & FOOTER
+   ============================================ */
+.app-footer {
+  text-align: center;
+  padding: var(--space-xl) 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  border-top: 1px solid var(--surface);
+  margin-top: var(--space-2xl);
+  backdrop-filter: blur(10px);
+}
+
+.app-footer p {
+  margin: 0;
+}
+
+/* ============================================
+   5. LOADING STATE
+   ============================================ */
+.loading-container {
+  text-align: center;
+  margin: var(--space-2xl) auto;
+  padding: var(--space-2xl);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-shadow);
+  max-width: 600px;
+  animation: scaleIn 0.4s ease-out;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 4px solid var(--surface);
+  border-top: 4px solid transparent;
+  border-image: var(--primary-gradient) 1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto var(--space-lg);
+  position: relative;
+}
+
+.spinner::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  opacity: 0.2;
+  filter: blur(10px);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.4; }
+}
+
+.loading-container p {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.loading-subtext {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-top: var(--space-sm);
+}
+
+/* ============================================
+   6. ERROR STATE
+   ============================================ */
+.error-container {
+  text-align: center;
+  margin: var(--space-2xl) auto;
+  padding: var(--space-2xl);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-left: 5px solid var(--danger);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-shadow), 0 0 30px rgba(239, 68, 68, 0.1);
+  max-width: 600px;
+  animation: shake 0.5s ease-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-md);
+  display: block;
+  filter: drop-shadow(0 4px 8px rgba(239, 68, 68, 0.3));
+}
+
+.error-container h3 {
+  color: var(--danger);
+  margin-bottom: var(--space-sm);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.error-container p {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+.retry-button {
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: var(--transition-base);
+  box-shadow: var(--shadow-md), var(--glow);
+  position: relative;
+  overflow: hidden;
+}
+
+.retry-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+  opacity: 0;
+  transition: var(--transition-base);
+}
+
+.retry-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(102, 126, 234, 0.6);
+}
+
+.retry-button:hover::before {
+  opacity: 1;
+}
+
+.retry-button:active {
+  transform: translateY(0);
+}
+
+/* ============================================
+   7. RESULTS LAYOUT
+   ============================================ */
+.results-container {
+  margin-top: var(--space-xl);
+  animation: fadeInUp 0.6s ease-out;
+}
+
 .results-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  padding: 0;
+  margin-bottom: var(--space-xl);
+  padding: var(--space-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
 }
 
 .results-header h2 {
-  color: var(--text-dark);
-  font-weight: 700;
-  font-size: 1.8rem;
+  font-size: 2rem;
+  font-weight: 800;
   margin: 0;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
 }
 
 .results-badges {
   display: flex;
   align-items: center;
+  gap: var(--space-md);
 }
 
-/* Updated Grid for better content distribution */
 .results-grid {
   display: grid;
-  grid-template-columns: 1fr 2fr; /* Sidebar: 1 part, Main: 2 parts */
-  gap: 2rem;
+  grid-template-columns: 400px 1fr;
+  gap: var(--space-xl);
   align-items: start;
 }
 
-.main-results {
-  grid-column: 2;
-}
-
 .sidebar-results {
-  grid-column: 1;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--space-lg);
   position: sticky;
-  top: 2rem;
+  top: var(--space-xl);
 }
 
-/* Ensure consistent card heights */
-.sidebar-results > * {
-  min-height: auto;
+.main-results {
+  min-height: 400px;
 }
 
-/* --- 6. Code Health Gauge Styles --- */
-.code-health-gauge-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+/* ============================================
+   8. CARD STYLES (Glassmorphism)
+   ============================================ */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
   padding: var(--space-lg);
-  text-align: center;
+  box-shadow: var(--glass-shadow);
+  transition: var(--transition-base);
 }
 
-.gauge-arc {
-  width: 120px;
-  height: 60px;
-  border: 8px solid;
-  border-top: none;
-  border-radius: 120px 120px 0 0;
-  position: relative;
-  margin-bottom: var(--space-md);
-  border-color: #e5e7eb;
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
-.gauge-needle {
-  width: 2px;
-  height: 50px;
-  background: var(--primary);
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform-origin: bottom center;
-  transform: translateX(-50%) rotate(0deg);
-  transition: transform 0.5s ease;
-}
-
-.score-value {
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: var(--space-xs);
-  line-height: 1;
-}
-
-.score-unit {
-  font-size: 1rem;
-  font-weight: 600;
-  opacity: 0.7;
-}
-
-.score-label {
-  font-size: var(--font-size-sm);
-  color: var(--gray);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* --- 7. Recommendations Styles --- */
-.recommendations {
-  margin-top: var(--space-lg);
-  padding-top: var(--space-lg);
-  border-top: 1px solid var(--gray-light);
-}
-
-.recommendations h4 {
-  margin-bottom: var(--space-md);
-  color: var(--darker);
-}
-
-.repo-info {
-  margin-top: var(--space-lg);
-  padding: var(--space-md);
-  background: var(--light);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  color: var(--gray);
-  text-align: center;
-}
-
-.metric-note {
-  font-size: var(--font-size-sm);
-  color: var(--gray);
-  margin-top: var(--space-sm);
-  line-height: 1.4;
-}
-
-/* --- 8. No Results State --- */
-.no-results {
-  text-align: center;
-  padding: var(--space-2xl);
-  color: var(--gray);
-  font-style: italic;
-}
-
-.no-data {
-  text-align: center;
-  padding: var(--space-xl);
-  color: var(--gray);
-  font-style: italic;
-  grid-column: 1 / -1;
-}
-
-/* --- 9. Responsive Design --- */
+/* ============================================
+   9. RESPONSIVE DESIGN
+   ============================================ */
 @media (max-width: 1200px) {
   .results-grid {
-    grid-template-columns: 1fr 1.5fr;
+    grid-template-columns: 350px 1fr;
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 968px) {
   .results-grid {
     grid-template-columns: 1fr;
-    gap: 2.5rem;
+    gap: var(--space-lg);
   }
-
-  .main-results,
+  
   .sidebar-results {
-    grid-column: 1;
-  }
-
-  .sidebar-results {
-    order: 1;
     position: static;
-  }
-
-  .main-results {
     order: 2;
+  }
+  
+  .main-results {
+    order: 1;
   }
 }
 
 @media (max-width: 768px) {
   .app-container {
-    padding: 0 15px;
+    padding: 0 var(--space-md);
   }
-
+  
+  .app-main {
+    padding: var(--space-lg) 0;
+  }
+  
   .results-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 1rem;
+    gap: var(--space-md);
   }
-
+  
   .results-header h2 {
     font-size: 1.5rem;
-  }
-
-  .metrics-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 }
 
 @media (max-width: 480px) {
-  .app-main {
-    padding: 1.5rem 0;
-  }
-
   .results-grid {
-    gap: 1.5rem;
+    gap: var(--space-md);
   }
+  
+  .loading-container,
+  .error-container {
+    padding: var(--space-lg);
+  }
+}
 
-  .gauge-arc {
-    width: 100px;
-    height: 50px;
-  }
+/* ============================================
+   10. UTILITY CLASSES
+   ============================================ */
+.gradient-text {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-  .score-value {
-    font-size: 1.5rem;
-  }
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+}
+
+.hover-lift {
+  transition: var(--transition-base);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* ============================================
+   11. SCROLLBAR STYLING
+   ============================================ */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--surface-hover);
+}
+
+/* ============================================
+   12. SELECTION STYLING
+   ============================================ */
+::selection {
+  background: rgba(102, 126, 234, 0.3);
+  color: var(--text-primary);
+}
+
+::-moz-selection {
+  background: rgba(102, 126, 234, 0.3);
+  color: var(--text-primary);
 }

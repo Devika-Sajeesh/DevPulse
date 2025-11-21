@@ -160,9 +160,9 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
 
         # 2. Define tool commands
         # IMPORTANT: Use specific paths and flags that work reliably
-        radon_cmd = ["radon", "cc", ".", "-s", "-a"]  # Cyclomatic complexity
+        radon_cmd = [r"C:\Users\acer\AppData\Local\Programs\Python\Python313\python.exe", "-m", "radon", "cc", ".", "-s", "-a"]  # Cyclomatic complexity
         cloc_cmd = ["cloc", ".", "--json"]  # JSON output for easier parsing
-        pylint_cmd = ["pylint", ".", "--output-format=text", "--exit-zero"]
+        pylint_cmd = [r"C:\Users\acer\AppData\Local\Programs\Python\Python313\python.exe", "-m", "pylint", ".", "--output-format=text", "--exit-zero"]
         
         print(f"[ANALYZER] Step 2: Running analysis tools...")
         print(f"  - Radon: {' '.join(radon_cmd)}")
