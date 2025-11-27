@@ -4,6 +4,7 @@ import asyncio
 import tempfile
 import shutil
 import os
+import sys
 from typing import Dict, Any, Tuple
 from concurrent.futures import ThreadPoolExecutor
 
@@ -160,9 +161,10 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
 
         # 2. Define tool commands
         # IMPORTANT: Use specific paths and flags that work reliably
-        radon_cmd = [r"C:\Users\acer\AppData\Local\Programs\Python\Python313\python.exe", "-m", "radon", "cc", ".", "-s", "-a"]  # Cyclomatic complexity
-        cloc_cmd = ["cloc", ".", "--json"]  # JSON output for easier parsing
-        pylint_cmd = [r"C:\Users\acer\AppData\Local\Programs\Python\Python313\python.exe", "-m", "pylint", ".", "--output-format=text", "--exit-zero"]
+       
+        radon_cmd = [sys.executable, "-m", "radon", "cc", ".", "-s", "-a"]
+        cloc_cmd = ["cloc", ".", "--json"]  # cloc is a system binary, no Python needed
+        pylint_cmd = [sys.executable, "-m", "pylint", ".", "--output-format=text", "--exit-zero"]
         
         print(f"[ANALYZER] Step 2: Running analysis tools...")
         print(f"  - Radon: {' '.join(radon_cmd)}")
