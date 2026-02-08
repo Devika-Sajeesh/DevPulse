@@ -2,10 +2,13 @@
 
 import sqlite3
 import json
+import os
 from datetime import datetime
 from typing import Dict, Any
 
-DB_PATH = "devpulse.db"
+# Use absolute path to ensure database works regardless of working directory
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DB_PATH = os.path.join(_PROJECT_ROOT, "devpulse.db")
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
