@@ -29,9 +29,6 @@ def parse_pylint_output(output: str) -> Dict[str, Any]:
         logger.warning("Pylint output is empty")
         return _empty_pylint_result()
     
-    if "Error" in output and "error" in output.lower():
-        logger.warning(f"Pylint output contains error: {output[:200]}")
-        return _empty_pylint_result()
     
     try:
         lines = [l for l in output.splitlines() if l.strip()]

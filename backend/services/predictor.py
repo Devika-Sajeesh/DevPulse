@@ -6,7 +6,9 @@ import os
 from joblib import load
 import numpy as np
 
-MODEL_PATH = "ml/historical_risk_model.joblib"
+# Use absolute path to avoid permission/CWD issues
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+MODEL_PATH = os.path.join(_PROJECT_ROOT, "ml", "historical_risk_model.joblib")
 HISTORICAL_RISK_MODEL = None
 
 
@@ -106,90 +108,69 @@ def get_historical_risk_score(repo_url: str, commit_sha: str, feature_vector: np
         except Exception as e:
             print(f"Prediction failed ({e}). Falling back to heuristic.")
     
-    # Fallback heuristic based on feature vector
-    # Extract features: [pylint, ai_prob, lines, complexity, comments, density]
-    features = feature_vector[0]
+    # Fallback: continuous weighted heuristic (smooth, not step-function)
+    # Features: [pylint_norm, ai_prob, lines_norm, complexity_norm, comment_ratio, density]
+    f = feature_vector[0]
     
-    # Simple heuristic: combine risk factors
-    risk = 0.3  # Base risk
-    
-    # Penalize low quality
-    if features[0] < 0.5:  # pylint < 5.0
-        risk += 0.2
-    
-    # Penalize high AI code
-    if features[1] > 0.5:
-        risk += 0.2
-    
-    # Penalize large codebase
-    if features[2] > 0.7:
-        risk += 0.1
-    
-    # Penalize high complexity
-    if features[3] > 0.6:
-        risk += 0.15
-    
-    # Reward good documentation
-    if features[4] > 0.2:
-        risk -= 0.1
+    # Weighted continuous scoring — each factor contributes proportionally
+    risk = (
+        0.35 * (1.0 - f[0]) +   # Low pylint score = high risk
+        0.20 * f[1] +             # High AI probability = moderate risk
+        0.10 * f[2] +             # Large codebase = slight risk
+        0.20 * f[3] +             # High complexity = significant risk
+        -0.10 * f[4] +            # Good documentation reduces risk
+        0.15 * f[5]               # High complexity density = risk
+    )
     
     return max(0.0, min(1.0, risk))
 
 
 def calculate_chs(parsed_analysis: Dict[str, Any], ai_probability: float, historical_risk: float) -> float:
     """
-    Calculates the Code Health Score (CHS) using weighted formula.
+    Calculates the Code Health Score (CHS) on a 0-100 scale.
     
-    CHS = (Pylint * W1) - (AI_Risk * W2) - (Historical_Risk * W3) - (Complexity_Penalty * W4)
-    
-    Scaled to 0-100.
+    Balanced formula where max positive = 100 and penalties subtract from it.
+    Components:
+      + Pylint quality:     0-50 points (code quality is the biggest factor)
+      + Low complexity:     0-20 points (reward for simple, maintainable code)
+      + Non-AI authenticity: 0-10 points (reward for human-written code)
+      + Documentation:      0-15 points (reward for good comments)
+      + Base credit:         5 points  (having analyzable code at all)
+      - Historical risk:    0-15 points (predicted tech debt penalty)
+    Max theoretical = 100, Min = 0
     """
     
-    # 1. Static Quality Score (Pylint 0-10 -> 0-1)
+    # 1. Pylint Quality (0-50 points)
     pylint_score = parsed_analysis.get("pylint", {}).get("score")
     if pylint_score is None:
-        static_score_normalized = 0.5
-    else:
-        static_score_normalized = pylint_score / 10.0
-    
-    # 2. AI Code Probability (0-1, higher is riskier)
-    ai_risk_normalized = ai_probability
-    
-    # 3. Historical Risk (0-1, higher is riskier)
-    historical_risk_normalized = historical_risk
-    
-    # 4. Complexity Penalty
+        pylint_score = 5.0
+    pylint_score = max(0.0, min(10.0, pylint_score))
+    pylint_contribution = (pylint_score / 10.0) * 50
+
+    # 2. Low Complexity Bonus (0-20 points) — reward simple code
     radon_data = parsed_analysis.get("radon", {})
     avg_complexity = radon_data.get("average_complexity", 5.0)
-    complexity_penalty = min(1.0, avg_complexity / 20.0)
-    
-    # Define weights
-    W_STATIC = 0.45          # Quality matters most
-    W_AI_PENALTY = 0.25      # AI code is a moderate risk
-    W_HIST_PENALTY = 0.20    # Predicted future risk
-    W_COMPLEXITY = 0.10      # Complexity penalty
-    
-    # Calculate raw score (can be negative)
-    chs_raw = (
-        (static_score_normalized * W_STATIC) -
-        (ai_risk_normalized * W_AI_PENALTY) -
-        (historical_risk_normalized * W_HIST_PENALTY) -
-        (complexity_penalty * W_COMPLEXITY)
-    )
-    
-    # Add bonus for good documentation
+    # Lower complexity = higher bonus. complexity 1 → 20pts, complexity 20+ → 0pts
+    complexity_bonus = max(0.0, (1.0 - min(1.0, avg_complexity / 20.0)) * 20)
+
+    # 3. Non-AI Authenticity Bonus (0-10 points) — reward human-written code
+    ai_bonus = (1.0 - ai_probability) * 10
+
+    # 4. Documentation Bonus (0-15 points)
     cloc_data = parsed_analysis.get("cloc", {})
-    total_code = cloc_data.get("code", 1)
+    total_code = max(cloc_data.get("code", 1), 1)
     total_comments = cloc_data.get("comment", 0)
-    comment_ratio = total_comments / total_code if total_code > 0 else 0
-    
-    # Bonus for good documentation (up to 0.1)
-    doc_bonus = min(0.1, comment_ratio * 0.5)
-    chs_raw += doc_bonus
-    
-    # Scale to 100 (raw score is roughly -0.5 to 0.6)
-    # Map [-0.5, 0.6] to [0, 100]
-    chs_final = ((chs_raw + 0.5) / 1.1) * 100
-    chs_final = max(0, min(100, chs_final))
+    comment_ratio = total_comments / total_code
+    doc_bonus = min(15.0, comment_ratio * 60)  # 25% ratio = full bonus
+
+    # 5. Base Credit (5 points for having analyzable code)
+    base = 5.0
+
+    # 6. Historical Risk Penalty (0-15 points subtracted)
+    risk_penalty = historical_risk * 15
+
+    # Calculate final score
+    chs_final = pylint_contribution + complexity_bonus + ai_bonus + doc_bonus + base - risk_penalty
+    chs_final = max(0.0, min(100.0, chs_final))
     
     return round(chs_final, 2)

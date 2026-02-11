@@ -9,23 +9,23 @@ import {
 } from "recharts";
 
 export default function ComplexityChart({ radon }) {
-  if (!radon || !Array.isArray(radon)) return null;
+  // radon is an object with { blocks: [...], average_complexity, total_functions, total_complexity }
+  if (!radon || !radon.blocks || !Array.isArray(radon.blocks) || radon.blocks.length === 0) {
+    return <p>No complexity data available.</p>;
+  }
 
-  const data = radon
-    .filter((item) => item.line.includes(" - ") && /\(\d+\)/.test(item.line))
-    .map((item) => {
-      const parts = item.line.split(" - ");
-      const funcNamePart = parts[0].trim().split(" ");
-      const func = funcNamePart.length > 1 ? funcNamePart[1] : funcNamePart[0];
-      const match = parts[1].match(/\((\d+)\)/);
-      const grade = match ? parseInt(match[1]) : 0;
-      return { name: func, complexity: grade };
-    });
+  const data = radon.blocks
+    .slice(0, 20) // Limit to top 20 for readability
+    .map((block) => ({
+      name: block.name || "unknown",
+      complexity: block.complexity || 0,
+      grade: block.grade || "?",
+    }));
 
   const getColor = (score) => {
-    if (score <= 5) return "var(--secondary)";
-    if (score <= 10) return "var(--warning)";
-    return "var(--danger)";
+    if (score <= 5) return "var(--secondary, #22c55e)";
+    if (score <= 10) return "var(--warning, #f59e0b)";
+    return "var(--danger, #ef4444)";
   };
 
   if (data.length === 0) return <p>No complexity data available.</p>;
@@ -37,15 +37,15 @@ export default function ComplexityChart({ radon }) {
         <div className="legend">
           <div className="legend-item">
             <span className="legend-color low"></span>
-            Low
+            Low (≤5)
           </div>
           <div className="legend-item">
             <span className="legend-color medium"></span>
-            Medium
+            Medium (6-10)
           </div>
           <div className="legend-item">
             <span className="legend-color high"></span>
-            High
+            High (&gt;10)
           </div>
         </div>
       </div>

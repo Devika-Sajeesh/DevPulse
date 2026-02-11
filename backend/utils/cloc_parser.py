@@ -34,8 +34,10 @@ def parse_cloc_output(cloc_output: str) -> Dict[str, Any]:
         logger.warning("CLOC output is empty")
         return _empty_cloc_result()
     
-    if "Error" in cloc_output or "error" in cloc_output.lower():
-        logger.warning(f"CLOC output contains error: {cloc_output[:200]}")
+    # Only reject if output starts with a clear error marker
+    first_line = cloc_output.strip().split('\n')[0].strip()
+    if first_line.startswith("Traceback") or first_line.startswith("ERROR:"):
+        logger.warning(f"CLOC output starts with error: {first_line[:200]}")
         return _empty_cloc_result()
 
     try:

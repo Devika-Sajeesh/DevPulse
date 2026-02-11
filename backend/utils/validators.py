@@ -6,7 +6,7 @@ and user inputs with security best practices.
 """
 
 import re
-from typing import Optional
+from typing import Optional, Any
 from urllib.parse import urlparse
 from backend.utils.exceptions import ValidationError
 
@@ -153,7 +153,7 @@ def sanitize_string(value: str, max_length: int = 1000) -> str:
     return value.strip()
 
 
-def validate_report_id(report_id: any) -> int:
+def validate_report_id(report_id: Any) -> int:
     """
     Validate report ID.
     

@@ -1,5 +1,6 @@
 {
     "welcome": "Welcome to DevPulse",
     "error": "An error occurred",
-    "analysis_complete": "Analysis complete"
+    "analysis_complete": "Analysis complete",
+    "upload_prompt": "Enter a GitHub repository URL to analyze"
 }

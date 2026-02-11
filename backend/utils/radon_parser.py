@@ -39,8 +39,10 @@ def parse_radon_output(radon_output: str) -> Dict[str, Any]:
         logger.warning("Radon output is empty")
         return _empty_radon_result()
     
-    if "Error" in radon_output or "error" in radon_output.lower():
-        logger.warning(f"Radon output contains error: {radon_output[:200]}")
+    # Only reject if output starts with a clear error marker (not if 'error' appears in analyzed code)
+    first_line = radon_output.strip().split('\n')[0].strip()
+    if first_line.startswith("Traceback") or first_line.startswith("ERROR:"):
+        logger.warning(f"Radon output starts with error: {first_line[:200]}")
         return _empty_radon_result()
     
     try:

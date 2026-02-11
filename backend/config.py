@@ -8,7 +8,7 @@ settings and secrets management.
 import os
 from typing import Optional, List
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, validator
+from pydantic import Field, field_validator, ValidationInfo
 from backend.utils.exceptions import ConfigurationError
 
 
@@ -85,8 +85,9 @@ class Settings(BaseSettings):
         description="Secret key for signing tokens"
     )
     
-    @validator("environment")
-    def validate_environment(cls, v):
+    @field_validator("environment")
+    @classmethod
+    def validate_environment(cls, v: str) -> str:
         """Validate environment value."""
         allowed = ["development", "staging", "production"]
         if v not in allowed:
@@ -96,8 +97,9 @@ class Settings(BaseSettings):
             )
         return v
     
-    @validator("log_level")
-    def validate_log_level(cls, v):
+    @field_validator("log_level")
+    @classmethod
+    def validate_log_level(cls, v: str) -> str:
         """Validate log level."""
         allowed = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         v = v.upper()
@@ -108,10 +110,11 @@ class Settings(BaseSettings):
             )
         return v
     
-    @validator("secret_key")
-    def validate_secret_key(cls, v, values):
+    @field_validator("secret_key")
+    @classmethod
+    def validate_secret_key(cls, v: str, info: ValidationInfo) -> str:
         """Validate secret key in production."""
-        if values.get("environment") == "production" and v == "change-me-in-production":
+        if info.data.get("environment") == "production" and v == "change-me-in-production":
             raise ConfigurationError(
                 "SECRET_KEY must be changed in production environment",
                 config_key="secret_key"

@@ -161,10 +161,16 @@ async def analyze_single_repo(repo_url: str) -> Dict[str, Any]:
 
         # 2. Define tool commands
         # IMPORTANT: Use specific paths and flags that work reliably
+        # Ignore common non-code directories for cleaner results
+        ignore_dirs = ".git,node_modules,venv,.venv,__pycache__,build,dist,.tox,.eggs"
        
-        radon_cmd = [sys.executable, "-m", "radon", "cc", ".", "-s", "-a"]
+        radon_cmd = [sys.executable, "-m", "radon", "cc", ".", "-s", "-a", f"--exclude={ignore_dirs}"]
         cloc_cmd = ["cloc", ".", "--json"]  # cloc is a system binary, no Python needed
-        pylint_cmd = [sys.executable, "-m", "pylint", ".", "--output-format=text", "--exit-zero"]
+        pylint_cmd = [
+            sys.executable, "-m", "pylint", ".", 
+            "--output-format=text", "--exit-zero", "--recursive=y",
+            f"--ignore-paths={ignore_dirs}"
+        ]
         
         print(f"[ANALYZER] Step 2: Running analysis tools...")
         print(f"  - Radon: {' '.join(radon_cmd)}")
