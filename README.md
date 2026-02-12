@@ -32,6 +32,18 @@ DevPulse is a production-grade code analysis and risk forecasting engine that co
 
 ---
 
+## 🎥 Demo
+
+Check out DevPulse in action:
+
+<video src="assets/demo%20video.mp4" controls="controls" style="max-width: 100%;">
+  Your browser does not support the video tag.
+</video>
+
+_Access the full video [here](assets/demo%20video.mp4)_
+
+---
+
 ## 🔄 Workflow
 
 The DevPulse analysis pipeline follows a structured 6-step workflow:
